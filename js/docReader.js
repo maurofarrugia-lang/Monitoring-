@@ -1,13 +1,1 @@
-export async function extractDocxText(file) {
-  if (!window.mammoth) throw new Error('Mammoth DOCX library did not load. Check your internet connection.');
-  const result = await window.mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
-  return result.value || '';
-}
-
-export async function extractSimpleFile(file) {
-  const extension = file.name.split('.').pop().toLowerCase();
-  if (extension === 'docx') return extractDocxText(file);
-  if (extension === 'txt') return file.text();
-  if (extension === 'doc') throw new Error('Legacy .doc files must first be saved as .docx.');
-  throw new Error(`Unsupported file type: .${extension}`);
-}
+export async function readDocx(file){if(!window.mammoth)throw Error('DOCX library did not load');const buf=await file.arrayBuffer(),[raw,html]=await Promise.all([window.mammoth.extractRawText({arrayBuffer:buf}),window.mammoth.convertToHtml({arrayBuffer:buf})]);return{text:raw.value||'',html:html.value||'<p>No previewable content.</p>'}}export async function readText(file){return file.text()}

@@ -1,9 +1,6 @@
 # Changelog
-## V2.3
-- Continuous vertical PDF page flow.
-- Sticky live page indicator.
-- Finding-to-page smooth navigation.
-- Previous and next finding controls.
-- Keyboard shortcuts: N and P.
-- Continuous DOCX preview.
-- Future-user guide and mandatory final-check checklist.
+## V2.2
+- DOCX visual preview and selected-text blackout.
+- DOCX flattened PDF export.
+- Fresh PDF page rendering during export to prevent blank pages.
+- Empty-canvas checks and progress messages.
