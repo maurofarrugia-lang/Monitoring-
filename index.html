@@ -1,9 +1,69 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Local PDF Redactor</title><link rel="stylesheet" href="css/styles.css"></head><body>
-<header><div><h1>Local PDF Redactor</h1><small>Documents are processed in this browser.</small></div><button id="theme" title="Toggle dark mode">◐</button></header>
-<section id="toolbar">
-<label class="button">Upload PDF<input id="file" type="file" accept="application/pdf" hidden></label><input id="query" placeholder="Words or patterns, one per line"><button id="find">Find Matches</button><button id="apply">Apply Auto Redaction</button><button id="manual" aria-pressed="false">Manual Mode</button><button id="undo">Undo</button><button id="redo">Redo</button><button id="clear">Clear All</button><button id="export">Export Redacted PDF</button>
-</section>
-<section id="options"><label><input id="case" type="checkbox"> Case sensitive</label><label><input id="whole" type="checkbox"> Whole word</label><label><input id="regex" type="checkbox"> Regular expression</label><label><input id="accent" type="checkbox" checked> Match accents</label><label><input id="all" type="checkbox" checked> All occurrences</label><button id="minus">−</button><span id="zoom">100%</span><button id="plus">+</button><input id="pageNo" type="number" min="1" value="1"><button id="go">Go</button></section>
-<div id="status"><span id="matches">0 matches</span><span id="ocr">OCR idle</span><span id="exportStatus"></span></div>
-<main id="drop"><div id="empty">Drop a PDF here or use Upload PDF</div><div id="viewer"></div></main><div id="toast" role="status"></div>
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.mjs" type="module"></script><script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script><script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script><script type="module" src="js/app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>PDF Redactor</title>
+  <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>PDF Redactor</h1>
+      <p>Local browser processing</p>
+    </div>
+    <button id="themeButton" class="icon-button" type="button" title="Toggle dark mode">◐</button>
+  </header>
+
+  <main>
+    <section class="toolbar" aria-label="Redaction toolbar">
+      <label class="button primary" for="pdfInput">Upload PDF</label>
+      <input id="pdfInput" type="file" accept="application/pdf,.pdf" hidden>
+      <textarea id="searchInput" rows="2" placeholder="Enter one term per line"></textarea>
+      <button id="findButton" type="button">Find</button>
+      <button id="applyButton" type="button">Apply matches</button>
+      <button id="manualButton" type="button" aria-pressed="false">Manual mode</button>
+      <button id="undoButton" type="button">Undo</button>
+      <button id="redoButton" type="button">Redo</button>
+      <button id="clearButton" type="button">Clear</button>
+      <button id="exportButton" class="primary" type="button">Export</button>
+    </section>
+
+    <section class="options" aria-label="Search and viewer options">
+      <label><input id="caseOption" type="checkbox"> Case-sensitive</label>
+      <label><input id="wholeOption" type="checkbox"> Whole word</label>
+      <label><input id="regexOption" type="checkbox"> Regular expression</label>
+      <label><input id="accentOption" type="checkbox" checked> Match accents</label>
+      <label><input id="allOption" type="checkbox" checked> All occurrences</label>
+      <span class="spacer"></span>
+      <button id="zoomOutButton" type="button" aria-label="Zoom out">−</button>
+      <output id="zoomOutput">100%</output>
+      <button id="zoomInButton" type="button" aria-label="Zoom in">+</button>
+      <label class="page-jump">Page <input id="pageInput" type="number" min="1" value="1"></label>
+      <button id="goButton" type="button">Go</button>
+    </section>
+
+    <section class="statusbar" aria-live="polite">
+      <span id="matchStatus">0 matches</span>
+      <span id="pageStatus">No PDF loaded</span>
+      <span id="ocrStatus">OCR idle</span>
+      <span id="exportStatus"></span>
+    </section>
+
+    <section id="dropZone" class="drop-zone">
+      <div id="emptyState" class="empty-state">
+        <strong>Drop a PDF here</strong>
+        <span>or select Upload PDF</span>
+      </div>
+      <div id="viewer" class="viewer"></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
