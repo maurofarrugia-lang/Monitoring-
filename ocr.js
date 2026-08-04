@@ -1,4 +1,53 @@
-import{state,loadPdf,renderAll}from'./pdfViewer.js';import{redactions,setRedactions,bindPage,setManual,undo,redo,clear,applyAuto,copySelected,render}from'./redactionManager.js';import{findMatches}from'./textSearch.js';import{exportPdf}from'./exportPdf.js';
-const $=s=>document.querySelector(s),toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)};async function open(f){if(!f||f.type!=='application/pdf')return toast('Choose a PDF file');await loadPdf(new Uint8Array(await f.arrayBuffer()),f.name);setRedactions([],false);toast('PDF loaded')}
-$('#file').onchange=e=>open(e.target.files[0]);const drop=$('#drop');['dragenter','dragover'].forEach(k=>drop.addEventListener(k,e=>{e.preventDefault();drop.classList.add('drag')}));['dragleave','drop'].forEach(k=>drop.addEventListener(k,e=>{e.preventDefault();drop.classList.remove('drag')}));drop.ondrop=e=>open(e.dataTransfer.files[0]);document.addEventListener('page-ready',e=>bindPage(e.detail.n,e.detail.overlay));
-$('#find').onclick=()=>{if(!state.pdf)return toast('Upload a PDF first');const terms=$('#query').value.split(/\n|;/).map(s=>s.trim()).filter(Boolean);if(!terms.length)return toast('Enter search text');const found=findMatches(terms,{case:$('#case').checked,whole:$('#whole').checked,regex:$('#regex').checked,accent:$('#accent').checked,all:$('#all').checked});setRedactions(redactions.filter(r=>r.source!=='auto').concat(found));$('#matches').textContent=found.length+' matches';localStorage.setItem('search-history',JSON.stringify([...new Set([...(JSON.parse(localStorage.getItem('search-history')||'[]')), ...terms])].slice(-20)));toast(found.length+' matches found')};$('#apply').onclick=()=>{applyAuto();toast('Automatic redactions applied')};$('#manual').onclick=e=>{const v=e.currentTarget.getAttribute('aria-pressed')!=='true';e.currentTarget.setAttribute('aria-pressed',v);setManual(v)};$('#undo').onclick=undo;$('#redo').onclick=redo;$('#clear').onclick=()=>{clear();$('#matches').textContent='0 matches'};$('#export').onclick=()=>state.pdf?exportPdf(m=>$('#exportStatus').textContent=m):toast('Upload a PDF first');$('#plus').onclick=async()=>{if(state.pdf){state.scale=Math.min(2.5,state.scale+.15);await renderAll();render()}};$('#minus').onclick=async()=>{if(state.pdf){state.scale=Math.max(.5,state.scale-.15);await renderAll();render()}};$('#go').onclick=()=>document.querySelector(`.page[data-page="${$('#pageNo').value}"]`)?.scrollIntoView({behavior:'smooth'});$('#theme').onclick=()=>document.body.classList.toggle('dark');document.onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();e.shiftKey?redo():undo()}if((e.ctrlKey||e.metaKey)&&e.key==='d'){e.preventDefault();copySelected()}if(e.key==='Escape'){$('#manual').setAttribute('aria-pressed','false');setManual(false)}};
+function otsuThreshold(hist, total) {
+  let sum = 0;
+  for (let i = 0; i < 256; i++) sum += i * hist[i];
+  let sumB = 0, weightB = 0, maximum = 0, threshold = 145;
+  for (let i = 0; i < 256; i++) {
+    weightB += hist[i];
+    if (!weightB) continue;
+    const weightF = total - weightB;
+    if (!weightF) break;
+    sumB += i * hist[i];
+    const meanB = sumB / weightB;
+    const meanF = (sum - sumB) / weightF;
+    const variance = weightB * weightF * Math.pow(meanB - meanF, 2);
+    if (variance > maximum) { maximum = variance; threshold = i; }
+  }
+  return threshold;
+}
+
+export function preprocessForOcr(sourceCanvas) {
+  const factor = sourceCanvas.width < 1800 ? 1.5 : 1;
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(sourceCanvas.width * factor);
+  canvas.height = Math.round(sourceCanvas.height * factor);
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(sourceCanvas, 0, 0, canvas.width, canvas.height);
+  const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const hist = new Array(256).fill(0);
+  for (let i = 0; i < image.data.length; i += 4) {
+    const g = Math.round(.299 * image.data[i] + .587 * image.data[i+1] + .114 * image.data[i+2]);
+    hist[g]++;
+  }
+  const threshold = Math.max(105, Math.min(205, otsuThreshold(hist, canvas.width * canvas.height)));
+  for (let i = 0; i < image.data.length; i += 4) {
+    const g = Math.round(.299 * image.data[i] + .587 * image.data[i+1] + .114 * image.data[i+2]);
+    const contrasted = g < threshold ? 0 : 255;
+    image.data[i] = image.data[i+1] = image.data[i+2] = contrasted;
+  }
+  ctx.putImageData(image, 0, 0);
+  return canvas;
+}
+
+export async function ocrCanvas(canvas, onProgress = () => {}) {
+  if (!window.Tesseract) throw new Error('Tesseract OCR library did not load. Check your internet connection.');
+  const prepared = preprocessForOcr(canvas);
+  const result = await window.Tesseract.recognize(prepared, 'eng', {
+    logger: message => {
+      if (message.status === 'recognizing text') onProgress(Math.round((message.progress || 0) * 100));
+    }
+  });
+  return result.data.text || '';
+}

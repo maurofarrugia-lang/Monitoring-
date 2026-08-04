@@ -1,7 +1,34 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PDF Redactor OCR</title><link rel="stylesheet" href="./css/styles.css"></head><body>
-<header><div><h1>PDF Redactor</h1><small>Local processing • OCR-assisted pattern redaction</small></div><button id="theme">◐</button></header>
-<section class="bar"><label class="btn primary">Upload PDF<input id="file" type="file" accept="application/pdf" hidden></label><button id="preset">Load anonymisation patterns</button><button id="ocrAll">OCR all pages</button><button id="find">Find matches</button><button id="apply">Apply previews</button><button id="manual" aria-pressed="false">Manual</button><button id="undo">Undo</button><button id="redo">Redo</button><button id="clear">Clear</button><button id="export" class="primary">Export PDF</button></section>
-<section class="settings"><textarea id="query" rows="5" placeholder="One literal term or regular expression per line"></textarea><div class="checks"><label><input id="regex" type="checkbox" checked> Regular expressions</label><label><input id="case" type="checkbox"> Case-sensitive</label><label><input id="whole" type="checkbox"> Whole word</label><label><input id="accents" type="checkbox" checked> Match accents</label><label><input id="all" type="checkbox" checked> All occurrences</label><label>OCR language <select id="lang"><option value="eng">English</option><option value="eng+ita">English + Italian</option><option value="eng+fra">English + French</option><option value="eng+ara">English + Arabic</option></select></label><label>OCR quality <select id="quality"><option value="2">Fast</option><option value="3" selected>Enhanced</option><option value="4">Maximum</option></select></label></div></section>
-<section class="nav"><button id="minus">−</button><output id="zoom">100%</output><button id="plus">+</button><label>Page <input id="page" type="number" min="1" value="1"></label><button id="go">Go</button><span id="matches">0 matches</span><span id="ocr">OCR idle</span><span id="status"></span></section>
-<main id="drop"><div id="empty"><b>Drop a PDF here</b><span>or use Upload PDF</span></div><div id="viewer"></div></main><div id="toast"></div>
-<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script><script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script><script type="module" src="./js/app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>IPA Redaction Tool V2</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+</head>
+<body>
+<main class="shell">
+  <header class="hero"><div><p class="eyebrow">IPA document utility</p><h1>IPA Redaction Tool <span class="v2">V2</span></h1><p class="subtitle">IPA-specific field extraction, OCR review, editable redaction boxes and flattened redacted PDF export.</p></div><span class="privacy">Local browser processing</span></header>
+  <section class="card uploader" id="dropZone"><input id="fileInput" type="file" accept=".pdf,.docx,.txt" hidden><button id="chooseBtn" class="primary">Choose document</button><p>or drag and drop one PDF, DOCX or TXT file</p><small>PDF supports visual redaction. DOCX and TXT support findings export.</small></section>
+  <section class="toolbar card">
+    <label><input id="ocrAll" type="checkbox"> OCR every PDF page</label>
+    <label><input id="detectNames" type="checkbox" checked> Detect names</label>
+    <label><input id="ipaMode" type="checkbox" checked> IPA form mode</label>
+    <button id="scanBtn" class="primary" disabled>Scan</button>
+    <button id="csvBtn" class="secondary" disabled>Download findings</button>
+    <button id="redactBtn" class="danger" disabled>Download redacted PDF</button>
+  </section>
+  <section id="warning" class="notice"><strong>Important:</strong> Review every suggested box. OCR and automated detection can miss content. The exported PDF is flattened to page images to prevent recovery of covered text.</section>
+  <section class="progress-wrap" id="progressWrap" hidden><div class="progress-row"><span id="status">Preparing…</span><span id="progressText">0%</span></div><progress id="progress" max="100" value="0"></progress></section>
+  <section id="summary" class="summary-grid"></section>
+  <section id="workspace" class="workspace" hidden>
+    <aside class="card sidebar"><h2>Pages</h2><div id="thumbs"></div></aside>
+    <section class="card viewer-card"><div class="viewer-head"><div><h2 id="pageTitle">Page preview</h2><p>Click and drag to add a box. Click a suggested box to include or exclude it.</p></div><button id="clearPageBtn" class="secondary">Clear manual boxes</button></div><div id="canvasWrap"><canvas id="pageCanvas"></canvas><canvas id="overlayCanvas"></canvas></div></section>
+  </section>
+  <section class="card results-card"><div class="section-head"><div><h2>Findings</h2><p id="resultNote">No scan has been run.</p></div><input id="filterInput" class="filter" type="search" placeholder="Filter findings…"></div><div class="table-wrap"><table><thead><tr><th>Use</th><th>Page</th><th>Type</th><th>Value</th><th>Context</th><th>Source</th></tr></thead><tbody id="resultsBody"><tr><td colspan="6" class="empty">Choose a document to begin.</td></tr></tbody></table></div></section>
+</main>
+<script type="module" src="app.js"></script>
+</body></html>

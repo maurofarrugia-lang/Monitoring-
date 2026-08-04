@@ -1,45 +1,41 @@
-# PDF Redactor OCR v3
+# IPA Redaction Tool V2
 
-A browser-based PDF redaction prototype for GitHub Pages.
+## Purpose
+V2 scans PDF, DOCX and TXT files for personal identifiers. For PDFs, it presents suggested redaction boxes, allows manual boxes and exports a flattened redacted PDF.
 
-## New in v3
+## IPA-specific rules
+- RefCom and Police ID numbers, including numeric-only values
+- Surname, name and date-of-birth fields beneath or beside IPA labels
+- Address and contact-number regions
+- Passport/document serial and visa numbers
+- Signature regions near standard signature labels
+- Generic e-mail, telephone, identifier and name matching
 
-- Built-in anonymisation regex preset for Passport No/Number, ID Number, Police Number, RefCom, Application Number, Case Number, Residence Permit, Date of Birth/D.O.B., Address, Mobile, Telephone, Email, Fingerprint, Photo, Guardian and Lawyer.
-- OCR renders pages at 2x, 3x or 4x resolution.
-- OCR performs two recognition passes: original high-resolution render and enhanced greyscale/contrast render; the higher-confidence result is retained.
-- Low-confidence OCR noise is filtered.
-- OCR coordinates are normalised for accurate redaction placement.
-- OCR all-pages option, useful for poor hybrid PDFs.
-- OCR word sequences are searched, so labels and values split across OCR words can match one pattern.
-
-## Run
-
-Serve the folder, do not open it with `file://`:
+## Run locally
+The application uses browser modules and must be served over HTTP:
 
 ```bash
-python3 -m http.server 8000
+python -m http.server 8080
 ```
 
-Open `http://localhost:8000`.
+Open `http://localhost:8080`.
 
-## GitHub Pages
+## Workflow
+1. Choose one document.
+2. Keep **IPA form mode** enabled for IPA application forms.
+3. Enable **OCR every PDF page** for scanned or poor-quality PDFs.
+4. Select **Scan**.
+5. Review every page. Red boxes are selected; blue boxes are excluded.
+6. Click a suggested box to toggle it. Drag on the preview to add a manual box.
+7. Download the findings CSV for an audit trail.
+8. Download the flattened redacted PDF.
 
-Upload the folder contents to a repository, then use **Settings > Pages > Deploy from a branch**, selecting the main branch and root folder.
+## Security and accuracy
+- The exported redacted PDF is rebuilt from rasterised page images. Covered source text is not retained as selectable PDF text.
+- OCR and automated field detection can miss handwriting, faint scans, stamps, overlapping text and unusual layouts.
+- The user must visually review every page before release.
+- JavaScript libraries are loaded from public CDNs. For an offline deployment, download and host approved versions internally and update the script/import paths.
+- Keep the original document in the controlled case-management environment and save the redacted copy as a separate file.
 
-## Pattern use
-
-Select **Load anonymisation patterns**, review the expressions, run OCR if appropriate, then select **Find matches**. Orange boxes are previews. Inspect every page, remove false positives, add missed areas manually, then apply and export.
-
-The preset deliberately expects a field label followed by a value to reduce false positives. It should be treated as an assisted-review tool, not an automatic legal guarantee of anonymisation.
-
-## Security
-
-Export rasterises every page and burns applied black boxes into a new image-only PDF. Verify the exported document before disclosure. No telemetry or analytics are included. The lightweight edition downloads PDF.js, pdf-lib and Tesseract.js from jsDelivr. For a strict offline deployment, host approved copies of those libraries within the repository and change the script/import paths.
-
-## OCR notes
-
-Maximum OCR is slower and uses more browser memory. Additional Tesseract language data must be available for the selected language. Handwriting, damaged scans, unusual fonts and low-resolution images can still be missed.
-
-## Licence
-
-MIT.
+## Legacy DOC
+Binary `.doc` files are not supported directly. Save them as `.docx` in Word before scanning.
