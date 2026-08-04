@@ -1,9 +1,9 @@
 # Changelog
-
-## V2.1 GitHub-ready
-
-- Reorganised CSS, JavaScript, detection patterns, assets and documentation into separate folders.
-- Updated all module and stylesheet paths.
-- Retained audited V2.1 OCR word coordinates and IPA label geometry.
-- Retained flattened redacted PDF export and CSV formula neutralisation.
-- Added GitHub validation workflow and test documentation.
+## V2.3
+- Continuous vertical PDF page flow.
+- Sticky live page indicator.
+- Finding-to-page smooth navigation.
+- Previous and next finding controls.
+- Keyboard shortcuts: N and P.
+- Continuous DOCX preview.
+- Future-user guide and mandatory final-check checklist.
