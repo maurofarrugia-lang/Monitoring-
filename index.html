@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>IPA Redaction Tool V2.4</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <div><small>IPA document utility</small><h1>IPA Redaction Tool <span>V2.4 Complete</span></h1></div>
+  <div id="pageIndicator" class="pill">No document</div>
+</header>
+<main class="shell">
+  <section id="dropZone" class="card upload">
+    <input id="fileInput" type="file" accept=".pdf,.docx,.txt" hidden>
+    <button id="chooseBtn" class="primary">Choose document</button>
+    <span id="selectedFile">or drag and drop a PDF, DOCX or TXT file</span>
+  </section>
+  <section class="card toolbar">
+    <label><input id="ocrAll" type="checkbox"> OCR every PDF page</label>
+    <label><input id="detectNames" type="checkbox" checked> Detect names</label>
+    <label><input id="ipaMode" type="checkbox" checked> IPA form mode</label>
+    <button id="scanBtn" class="primary" disabled>Scan</button>
+    <button id="prevFindingBtn" disabled>Previous finding</button>
+    <button id="nextFindingBtn" disabled>Next finding</button>
+    <button id="clearManualBtn" disabled>Clear manual boxes</button>
+    <button id="csvBtn" disabled>Download findings</button>
+    <button id="exportBtn" class="danger" disabled>Download redacted PDF</button>
+  </section>
+  <section class="notice"><strong>Mandatory review:</strong> inspect every page, including handwriting, signatures, stamps, annotations and embedded images.</section>
+  <section id="progressWrap" hidden><div class="progressrow"><span id="statusText">Preparing</span><span id="progressText">0%</span></div><progress id="progressBar" max="100" value="0"></progress></section>
+  <section id="summary" class="metrics"></section>
+  <section class="layout">
+    <aside class="card findings"><div class="panel-head"><h2>Findings</h2><span id="findingCount">0</span></div><input id="filterInput" type="search" placeholder="Filter findings"><div id="findingsList"><p class="muted">No scan has been run.</p></div></aside>
+    <section class="card document-panel"><div class="viewer-head"><div><h2>Continuous viewer</h2><p>Scroll page to page. Click a box to toggle it. Drag to add a manual PDF box.</p></div></div><div id="documentViewer"><div class="empty">Choose and scan a document.</div></div></section>
+  </section>
+</main>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
