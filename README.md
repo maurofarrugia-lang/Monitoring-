@@ -1,63 +1,45 @@
-# Minimal PDF Redactor
+# PDF Redactor OCR v3
 
-A browser-based PDF redaction application for GitHub Pages. It supports automatic text matching, OCR for pages without a PDF text layer, manual redaction rectangles, undo/redo, zoom, page navigation and image-only PDF export.
+A browser-based PDF redaction prototype for GitHub Pages.
 
-## Start locally
+## New in v3
 
-Do not open `index.html` with a `file://` address. From the project folder run:
+- Built-in anonymisation regex preset for Passport No/Number, ID Number, Police Number, RefCom, Application Number, Case Number, Residence Permit, Date of Birth/D.O.B., Address, Mobile, Telephone, Email, Fingerprint, Photo, Guardian and Lawyer.
+- OCR renders pages at 2x, 3x or 4x resolution.
+- OCR performs two recognition passes: original high-resolution render and enhanced greyscale/contrast render; the higher-confidence result is retained.
+- Low-confidence OCR noise is filtered.
+- OCR coordinates are normalised for accurate redaction placement.
+- OCR all-pages option, useful for poor hybrid PDFs.
+- OCR word sequences are searched, so labels and values split across OCR words can match one pattern.
+
+## Run
+
+Serve the folder, do not open it with `file://`:
 
 ```bash
 python3 -m http.server 8000
 ```
 
-Open `http://localhost:8000` in a browser.
+Open `http://localhost:8000`.
 
 ## GitHub Pages
 
-1. Create a GitHub repository.
-2. Upload the contents of this folder, keeping the `css`, `js` and `assets` folders unchanged.
-3. Open **Settings > Pages**.
-4. Select **Deploy from a branch**.
-5. Select the main branch and `/ (root)` folder.
-6. Save and open the published GitHub Pages address.
+Upload the folder contents to a repository, then use **Settings > Pages > Deploy from a branch**, selecting the main branch and root folder.
 
-## File names
+## Pattern use
 
-Keep these paths exactly as supplied:
+Select **Load anonymisation patterns**, review the expressions, run OCR if appropriate, then select **Find matches**. Orange boxes are previews. Inspect every page, remove false positives, add missed areas manually, then apply and export.
 
-- `index.html`
-- `css/styles.css`
-- `js/app.js`
-- `js/pdfViewer.js`
-- `js/textSearch.js`
-- `js/redactionManager.js`
-- `js/ocr.js`
-- `js/exportPdf.js`
+The preset deliberately expects a field label followed by a value to reduce false positives. It should be treated as an assisted-review tool, not an automatic legal guarantee of anonymisation.
 
-Do not rename them to `app.js.1` or `styles.css.1`.
+## Security
 
-## Privacy and dependencies
+Export rasterises every page and burns applied black boxes into a new image-only PDF. Verify the exported document before disclosure. No telemetry or analytics are included. The lightweight edition downloads PDF.js, pdf-lib and Tesseract.js from jsDelivr. For a strict offline deployment, host approved copies of those libraries within the repository and change the script/import paths.
 
-The PDF itself is processed in the browser and this application contains no analytics or telemetry. The default lightweight build downloads PDF.js, pdf-lib and Tesseract.js from jsDelivr when the page opens. For a controlled offline deployment, download approved copies of these libraries into your own repository and replace the CDN paths with local relative paths.
+## OCR notes
 
-OCR language is set to English (`eng`) in `js/ocr.js`.
-
-## Redaction security
-
-Export creates a new image-only PDF. Each original page is rendered to an image and applied black rectangles are painted into that image before the new PDF is generated. This avoids retaining the original selectable text layer in the exported document. Always inspect the exported PDF before disclosure.
-
-## Search limitation
-
-PDF.js commonly stores text in separate items. A phrase split across several PDF text items may not be detected as one phrase. Search the component words separately or add a manual rectangle.
-
-## Keyboard shortcuts
-
-- Ctrl/Cmd+Z: Undo
-- Ctrl/Cmd+Shift+Z: Redo
-- Ctrl/Cmd+D: Copy selected redaction
-- Delete: Delete selected redaction
-- Escape: Exit manual mode
+Maximum OCR is slower and uses more browser memory. Additional Tesseract language data must be available for the selected language. Handwriting, damaged scans, unusual fonts and low-resolution images can still be missed.
 
 ## Licence
 
-MIT. Third-party libraries remain subject to their own licences.
+MIT.
