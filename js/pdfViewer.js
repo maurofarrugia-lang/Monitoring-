@@ -1,1 +1,29 @@
-import * as pdfjsLib from "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.mjs";pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs";export{pdfjsLib};export const state={pdf:null,bytes:null,name:"document.pdf",scale:1,pages:new Map(),items:new Map(),ocr:new Map()};export async function loadPdf(file){state.bytes=new Uint8Array(await file.arrayBuffer());state.name=file.name;state.pdf=await pdfjsLib.getDocument({data:state.bytes.slice()}).promise;state.ocr.clear();await renderAll()}export async function renderAll(){const v=document.querySelector('#viewer');v.innerHTML='';state.pages.clear();state.items.clear();for(let n=1;n<=state.pdf.numPages;n++){const page=await state.pdf.getPage(n),vp=page.getViewport({scale:state.scale}),wrap=document.createElement('article'),c=document.createElement('canvas'),o=document.createElement('div');wrap.className='page';wrap.dataset.page=n;c.width=Math.ceil(vp.width);c.height=Math.ceil(vp.height);o.className='overlay';wrap.append(c,o);v.append(wrap);await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;const tc=await page.getTextContent();state.pages.set(n,{page,viewport:vp,wrap,canvas:c,overlay:o});state.items.set(n,tc.items||[]);document.dispatchEvent(new CustomEvent('page-ready',{detail:{n,o}}))}document.querySelector('#empty').hidden=true;document.querySelector('#zoom').textContent=Math.round(state.scale*100)+'%'}
+let pdfJsPromise;
+export async function getPdfJs(){
+  if(!pdfJsPromise){
+    pdfJsPromise=import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs').then(m=>{
+      m.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
+      return m;
+    });
+  }
+  return pdfJsPromise;
+}
+export async function openPdf(file){
+  const lib=await getPdfJs();
+  return lib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;
+}
+export async function pageData(pdf,n,scale=2){
+  const lib=await getPdfJs();
+  const page=await pdf.getPage(n);
+  const viewport=page.getViewport({scale});
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.ceil(viewport.width); canvas.height=Math.ceil(viewport.height);
+  await page.render({canvasContext:canvas.getContext('2d',{willReadFrequently:true}),viewport}).promise;
+  const content=await page.getTextContent();
+  const items=content.items.map(i=>{
+    const tx=lib.Util.transform(viewport.transform,i.transform);
+    const h=Math.max(8,Math.abs(tx[3]||i.height*scale));
+    return{text:i.str||'',x:tx[4],y:tx[5]-h,w:Math.max(2,i.width*scale),h};
+  });
+  return{canvas,items,text:items.map(i=>i.text).join('\n'),width:canvas.width,height:canvas.height};
+}
